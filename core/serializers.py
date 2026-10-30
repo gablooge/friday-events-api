@@ -42,3 +42,18 @@ class RSVPSerializer(serializers.Serializer):
     rsvp = serializers.ChoiceField(
         choices=[Invitation.RSVP.GOING, Invitation.RSVP.MAYBE, Invitation.RSVP.DECLINED]
     )
+
+
+class EventErrorSerializer(serializers.Serializer):
+    """Shape of a 400 error for create/update event. Only used for the API docs.
+
+    DRF returns {"field_name": ["message", ...]}, and only for fields that failed.
+    """
+
+    title = serializers.ListField(child=serializers.CharField(), required=False)
+    description = serializers.ListField(child=serializers.CharField(), required=False)
+    start_time = serializers.ListField(child=serializers.CharField(), required=False)
+    end_time = serializers.ListField(child=serializers.CharField(), required=False)
+    location = serializers.ListField(child=serializers.CharField(), required=False)
+    capacity = serializers.ListField(child=serializers.CharField(), required=False)
+    visibility = serializers.ListField(child=serializers.CharField(), required=False)
