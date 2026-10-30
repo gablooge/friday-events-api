@@ -8,9 +8,7 @@ class Event(models.Model):
         FRIENDS = "friends", "Friends"
         PUBLIC = "public", "Public"
 
-    host = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="hosted_events"
-    )
+    host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="hosted_events")
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     start_time = models.DateTimeField()
@@ -18,9 +16,7 @@ class Event(models.Model):
     location = models.CharField(max_length=255, blank=True)
     # Empty capacity means "no limit"
     capacity = models.PositiveIntegerField(null=True, blank=True)
-    visibility = models.CharField(
-        max_length=10, choices=Visibility.choices, default=Visibility.PRIVATE
-    )
+    visibility = models.CharField(max_length=10, choices=Visibility.choices, default=Visibility.PRIVATE)
     # Cancelled events are kept, so invitees can still see what happened
     is_cancelled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -48,9 +44,7 @@ class Invitation(models.Model):
         DECLINED = "declined", "Declined"
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="invitations")
-    invitee = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="invitations"
-    )
+    invitee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="invitations")
     rsvp = models.CharField(max_length=10, choices=RSVP.choices, default=RSVP.PENDING)
     # A co-host can edit and cancel the event, same as the host
     is_cohost = models.BooleanField(default=False)

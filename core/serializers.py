@@ -40,9 +40,7 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 class RSVPSerializer(serializers.Serializer):
     # "pending" is only the starting state, users cannot answer with it
-    rsvp = serializers.ChoiceField(
-        choices=[Invitation.RSVP.GOING, Invitation.RSVP.MAYBE, Invitation.RSVP.DECLINED]
-    )
+    rsvp = serializers.ChoiceField(choices=[Invitation.RSVP.GOING, Invitation.RSVP.MAYBE, Invitation.RSVP.DECLINED])
 
 
 class EventErrorSerializer(serializers.Serializer):

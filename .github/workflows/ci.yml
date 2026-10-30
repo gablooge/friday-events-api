@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# A new push to the same branch cancels the old run
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install ruff==0.17.3
+      - name: Ruff lint
+        run: ruff check .
+      - name: Ruff format
+        run: ruff format --check .
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install bandit==1.9.4 pip-audit==2.10.1
+      - name: Bandit (security issues in our code)
+        run: bandit -r core config
+      - name: pip-audit (known vulnerabilities in dependencies)
+        run: pip-audit -r requirements.lock.txt --strict
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: friday_events
+          POSTGRES_USER: friday
+          POSTGRES_PASSWORD: friday
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U friday -d friday_events"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGDATABASE: friday_events
+      PGUSER: friday
+      PGPASSWORD: friday
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
+      - run: pip install -r requirements.lock.txt
+      - name: Django system check
+        run: python manage.py check
+      - name: No missing migrations
+        run: python manage.py makemigrations --check --dry-run
+      - name: Tests
+        run: pytest -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, security, test]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build image and start the stack
+        run: docker compose up -d --build --wait
+      - name: Smoke test
+        run: |
+          curl --fail -s -o /dev/null http://localhost:8000/api/schema/
+          curl --fail -s -o /dev/null http://localhost:8000/api/docs/
+          # Without a token the API must refuse
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/api/events/)" = "401"
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+      - name: Stop the stack
+        if: always()
+        run: docker compose down -v
