@@ -21,6 +21,8 @@ class Event(models.Model):
     visibility = models.CharField(
         max_length=10, choices=Visibility.choices, default=Visibility.PRIVATE
     )
+    # Cancelled events are kept, so invitees can still see what happened
+    is_cancelled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -29,6 +31,11 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+    def is_host_or_cohost(self, user):
+        if self.host == user:
+            return True
+        return self.invitations.filter(invitee=user, is_cohost=True).exists()
 
 
 class Invitation(models.Model):
@@ -45,6 +52,8 @@ class Invitation(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="invitations"
     )
     rsvp = models.CharField(max_length=10, choices=RSVP.choices, default=RSVP.PENDING)
+    # A co-host can edit and cancel the event, same as the host
+    is_cohost = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

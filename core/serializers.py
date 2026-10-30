@@ -16,10 +16,11 @@ class EventSerializer(serializers.ModelSerializer):
             "location",
             "capacity",
             "visibility",
+            "is_cancelled",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["host", "created_at", "updated_at"]
+        read_only_fields = ["host", "is_cancelled", "created_at", "updated_at"]
 
     def validate(self, attrs):
         # On PATCH one of the times may be missing, so use the saved value
@@ -33,7 +34,7 @@ class EventSerializer(serializers.ModelSerializer):
 class InvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invitation
-        fields = ["id", "event", "invitee", "rsvp", "created_at"]
+        fields = ["id", "event", "invitee", "is_cohost", "rsvp", "created_at"]
         read_only_fields = ["event", "rsvp", "created_at"]
 
 

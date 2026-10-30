@@ -76,6 +76,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 import os
+from datetime import timedelta
 
 if os.environ.get("USE_SQLITE") == "1":
     # Employer-approved fallback if PostgreSQL is unavailable.
@@ -142,10 +143,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Django REST framework
 REST_FRAMEWORK = {
+    # The mobile app sends "Authorization: Bearer <access token>"
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+
+# JWT tokens (djangorestframework-simplejwt)
+# A short access token limits the damage if one leaks. The app keeps the
+# refresh token in secure storage and uses it to get a new access token.
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
 
