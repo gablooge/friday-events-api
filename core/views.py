@@ -1,11 +1,20 @@
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Event, Invitation
-from .serializers import EventSerializer, InvitationSerializer, RSVPSerializer
+from .serializers import EventErrorSerializer, EventSerializer, InvitationSerializer, RSVPSerializer
 
 
+@extend_schema_view(
+    create=extend_schema(
+        request=EventSerializer,
+        responses={201: EventSerializer, 400: EventErrorSerializer},
+    ),
+    update=extend_schema(responses={200: EventSerializer, 400: EventErrorSerializer}),
+    partial_update=extend_schema(responses={200: EventSerializer, 400: EventErrorSerializer}),
+)
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
@@ -14,6 +23,7 @@ class EventViewSet(viewsets.ModelViewSet):
         # The logged-in user is always the host
         serializer.save(host=self.request.user)
 
+    @extend_schema(request=InvitationSerializer, responses={201: InvitationSerializer})
     @action(detail=True, methods=["post"])
     def invite(self, request, pk=None):
         event = self.get_object()
@@ -29,6 +39,7 @@ class EventViewSet(viewsets.ModelViewSet):
         serializer.save(event=event)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=RSVPSerializer, responses={200: InvitationSerializer})
     @action(detail=True, methods=["post"])
     def rsvp(self, request, pk=None):
         event = self.get_object()

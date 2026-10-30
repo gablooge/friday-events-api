@@ -145,4 +145,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+
+# OpenAPI 3 schema (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Friday Events API",
+    "VERSION": "1.0.0",
+    # Separate "EventRequest" and "Event" schemas, so the mobile client does
+    # not ask for read-only fields like id or host when creating an event
+    "COMPONENT_SPLIT_REQUEST": True,
 }
