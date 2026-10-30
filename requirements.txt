@@ -1,0 +1,7 @@
+Django>=5.2,<6
+djangorestframework
+drf-spectacular
+djangorestframework-simplejwt
+psycopg[binary]
+pytest
+pytest-django
