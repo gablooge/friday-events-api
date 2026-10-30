@@ -85,6 +85,10 @@ def test_invitee_can_rsvp(guest, event, answer):
 
 
 def test_not_invited_user_cannot_rsvp(guest, event):
+    # Public, so the guest can see it but is still not invited
+    event.visibility = "public"
+    event.save()
+
     response = client_for(guest).post(f"/api/events/{event.id}/rsvp/", {"rsvp": "going"}, format="json")
 
     assert response.status_code == 400
