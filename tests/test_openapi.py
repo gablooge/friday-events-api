@@ -19,9 +19,7 @@ def test_create_event_documents_request_201_and_400(schema):
     assert create["requestBody"]["content"]["application/json"]["schema"] == {
         "$ref": "#/components/schemas/EventRequest"
     }
-    assert create["responses"]["201"]["content"]["application/json"]["schema"] == {
-        "$ref": "#/components/schemas/Event"
-    }
+    assert create["responses"]["201"]["content"]["application/json"]["schema"] == {"$ref": "#/components/schemas/Event"}
     assert create["responses"]["400"]["content"]["application/json"]["schema"] == {
         "$ref": "#/components/schemas/EventError"
     }
